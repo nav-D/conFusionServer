@@ -222,7 +222,6 @@ dishRouter.route('/:dishId/comments/:commentId')
             var comm = dish.comments.id(req.params.commentId)
 
             if(comm != null) {
-                // dish.comments.id(req.params.commentId).remove();
                 comm.remove();
                 dish.save()
                 .then((dish) => {

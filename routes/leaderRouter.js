@@ -15,7 +15,7 @@ leaderRouter.route('/')
         res.setHeader('Content-Type','application/json');
         res.json(leaders);
     }
-    // ,(err) => next(err)
+     ,(err) => next(err)
     )
     .catch((err) => next(err));
 })
@@ -26,7 +26,7 @@ leaderRouter.route('/')
         res.setHeader('Content-Type','application/json');
         res.json(leader);
     }
-    // ,(err) => next(err)
+     ,(err) => next(err)
     )
     .catch((err) => next(err));
 })
@@ -41,8 +41,7 @@ leaderRouter.route('/')
         res.setHeader('Content-Type','application/json');
         res.json(response);
     }
-    // ,(err) => next(err))
-    )
+     ,(err) => next(err))
     .catch((err) => next(err));
 });
 
@@ -55,7 +54,7 @@ leaderRouter.route('/:leaderId')
         res.setHeader('Content-Type','application/json');
         res.json(leader);
     }
-    // ,(err) => next(err)
+     ,(err) => next(err)
     )
     .catch((err) => next(err));
 })
@@ -74,7 +73,7 @@ leaderRouter.route('/:leaderId')
         res.setHeader('Content-Type','application/json');
         res.json(leaders);
     }
-    // ,(err) => next(err)
+     ,(err) => next(err)
     )
     .catch((err) =>next(err));
 })
@@ -86,7 +85,7 @@ leaderRouter.route('/:leaderId')
         res.setHeader('Content-Type','application/json');
         res.json(leaders);
     }
-    // ,(err) => next(err)
+    ,(err) => next(err)
     )
     .catch((err) => next(err));
 });
