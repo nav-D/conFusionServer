@@ -5,12 +5,23 @@ var passport = require('passport');
 var authenticate = require('../authenticate');
 userRouter.use(express.json());
 /* GET users listing. */
-userRouter.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+userRouter.get('/', authenticate.verifyUser, function(req, res, next) {
+  if(!req.user.admin) {
+    var err = new Error('You are not authorized for this operation');
+    err.status = 403;
+    throw err;
+  }
+  User.find({})
+  .then((users) =>{
+      res.statusCode = 200;
+      res.setHeader('Content-Type','application/json');
+      res.json(users);
+  }, (err) =>{next(err)})
+  .catch((err) => next(err));;
 });
 
 userRouter.post('/signup', (req,res,next)=>{
-    User.register(new userSchema({username: req.body.username}),req.body.password, (err, user) =>{
+    User.register(new User({username: req.body.username}),req.body.password, (err, user) =>{
       if(err) {
         res.statusCode = 500;
         res.setHeader('Content-Type','application/json');

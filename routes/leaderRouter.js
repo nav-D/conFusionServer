@@ -20,6 +20,10 @@ leaderRouter.route('/')
     .catch((err) => next(err));
 })
 .post(authenticate.verifyUser ,(req,res,next) =>{
+    if(!req.user.admin) {
+        var err = new Error('You are not authorized for this operation');
+        throw err;
+    }
     Leaders.create(req.body)
     .then((leader)=> {
         res.statusCode = 200;
@@ -35,6 +39,10 @@ leaderRouter.route('/')
     res.end('PUT not supported on /leaders');
 })
 .delete(authenticate.verifyUser ,(req,res,next) =>{
+    if(!req.user.admin) {
+        var err = new Error('You are not authorized for this operation');
+        throw err;
+    }
     Leaders.deleteMany()
     .then((response) => {
         res.statusCode= 200;
@@ -65,6 +73,10 @@ leaderRouter.route('/:leaderId')
 })
 
 .put(authenticate.verifyUser ,(req,res,next) =>{
+    if(!req.user.admin) {
+        var err = new Error('You are not authorized for this operation');
+        throw err;
+    }
     Leaders.findByIdAndUpdate(req.params.leaderId,{
         $set: req.body
     },{new: true})
@@ -79,6 +91,10 @@ leaderRouter.route('/:leaderId')
 })
 
 .delete(authenticate.verifyUser ,(req,res,next) =>{
+    if(!req.user.admin) {
+        var err = new Error('You are not authorized for this operation');
+        throw err;
+    }
     Leaders.findByIdAndRemove(req.params.leaderId)
     .then((leaders) => {
         res.statusCode = 200;

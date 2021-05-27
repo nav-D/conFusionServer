@@ -19,7 +19,12 @@ dishRouter.route('/')
     }, (err) =>{next(err)})
     .catch((err) => next(err));
 })
-.post(authenticate.verifyUser , (req,res,next) =>{
+.post(authenticate.verifyUser, (req,res,next) =>{
+    if(!req.user.admin) {
+        var err = new Error('You are not authorized for this operation');
+        err.status = 403;
+        throw err;
+    }
     Dishes.create(req.body)
     .then((dish) => {
         console.log('Created: ', dish);
@@ -34,6 +39,11 @@ dishRouter.route('/')
     res.end('PUT not supported on /dishes');
 })
 .delete(authenticate.verifyUser ,(req,res,next) =>{
+    if(!req.user.admin) {
+        var err = new Error('You are not authorized for this operation');
+        err.status = 403;
+        throw err;
+    }
     Dishes.deleteMany()
     .then((response) => {
         res.statusCode = 200;
@@ -62,6 +72,10 @@ dishRouter.route('/:dishId')
 })
 
 .put(authenticate.verifyUser ,(req,res,next) =>{
+    if(!req.user.admin) {
+        var err = new Error('You are not authorized for this operation'); err.status = 403;
+        throw err;
+    }
     Dishes.findByIdAndUpdate(req.params.dishId, {
         $set: req.body
     }, {new:true})
@@ -74,6 +88,10 @@ dishRouter.route('/:dishId')
 })
 
 .delete(authenticate.verifyUser ,(req,res,next) =>{
+    if(!req.user.admin) {
+        var err = new Error('You are not authorized for this operation'); err.status = 403;
+        throw err;
+    }
     Dishes.findByIdAndDelete(req.params.dishId)
     .then((dishes) =>{
         res.statusCode = 200;
@@ -136,6 +154,11 @@ dishRouter.route('/:dishId/comments')
 })
 
 .delete(authenticate.verifyUser ,(req,res,next) => {
+    // var admin = authenticate.verifyAdmin({_id: req.user._id}); 
+    if(!req.user.admin) {
+        var err = new Error('You are not authorized for this operation'); err.status = 403;
+        throw err;
+    }
     Dishes.findById(req.params.dishId)
     .then((dish) => {
         if(dish != null) {
@@ -168,7 +191,6 @@ dishRouter.route('/:dishId/comments/:commentId')
     .then((dish) =>{
         if(dish !=null ){
             var comment = dish.comments.id(req.params.commentId)
-
             if(comment != null) {
                 res.statusCode = 200;
                 res.setHeader('Content-Type','application/json');
@@ -197,6 +219,11 @@ dishRouter.route('/:dishId/comments/:commentId')
             var comm = dish.comments.id(req.params.commentId)
 
             if(comm != null) {
+                if(req.user._id !== comm.author._id){
+                    var err = new Error('You are not authorised to update someone else"s comment');
+                    err.status = 403;
+                    return next(err);
+                }
                 if(req.body.rating) {
                     comm.rating = req.body.rating;
                 }
@@ -205,7 +232,7 @@ dishRouter.route('/:dishId/comments/:commentId')
                 }
                 dish.save()
                 .then((dish) => {
-                    Dishes.findById('dish._id').populate('comments.author')
+                    Dishes.findById(dish._id).populate('comments.author')
                     .then((dish) => {
                         res.statusCode = 200;
                         res.setHeader('Content-Type','application/json');
@@ -228,30 +255,33 @@ dishRouter.route('/:dishId/comments/:commentId')
     }, (err) =>{next(err)})
     .catch((err) => next(err));
 })
-
 .delete(authenticate.verifyUser ,(req,res,next) =>{
     Dishes.findById(req.params.dishId)
     .then((dish) =>{
         if(dish !=null ){
-            var comm = dish.comments.id(req.params.commentId)
-
+            var comm = dish.comments.id(req.params.commentId);
             if(comm != null) {
+                if(req.user._id.toString() != comm.author._id.toString())
+                {
+                    var err = new Error('You are not authorised to delete someone else"s comment');
+                    err.status = 403;
+                    return next(err);
+                }
                 comm.remove();
                 dish.save()
                 .then((dish) => {
-                    Dishes.findById('dish._id').populate('comments.author')
+                    Dishes.findById(dish._id).populate('comments.author')
                     .then((dish) => {
                         res.statusCode = 200;
                         res.setHeader('Content-Type','application/json');
                         res.json(dish.comments);
-                    })
-                    .catch((err) => next(err));
-                }, (err) => next(err));
+                    });
+                }, (err) => next(err))
             }
             else { 
                 err = new Error('Comment '+req.params.commentId +' doesnt exist');
-                err.status =404 ;
-                throw err;
+                err.status = 404 ;
+                return next(err);
             }
         }
         else{
@@ -262,7 +292,5 @@ dishRouter.route('/:dishId/comments/:commentId')
     }, (err) =>{next(err)})
     .catch((err) => next(err));
 });
-
-
 
 module.exports = dishRouter;
