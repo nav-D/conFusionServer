@@ -11,7 +11,7 @@ dishRouter.use(express.json());
 
 dishRouter.route('/')
 .options(cors.corsWithOptions, (req,res) => {res.sendStatus(200);})
-.get(cors.cors, (req,res,next) => {
+.get(cors.corsWithOptions, (req,res,next) => {
     Dishes.find({})
     .populate('comments.author')
     .then((dishes) =>{
@@ -21,12 +21,7 @@ dishRouter.route('/')
     }, (err) =>{next(err)})
     .catch((err) => next(err));
 })
-.post(cors.corsWithOptions, authenticate.verifyUser, (req,res,next) =>{
-    if(!req.user.admin) {
-        var err = new Error('You are not authorized for this operation');
-        err.status = 403;
-        throw err;
-    }
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin,(req,res,next) =>{
     Dishes.create(req.body)
     .then((dish) => {
         console.log('Created: ', dish);
@@ -36,16 +31,11 @@ dishRouter.route('/')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.put(cors.corsWithOptions, authenticate.verifyUser ,(req,res,next) =>{
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin ,(req,res,next) =>{
     res.statusCode = 403;
     res.end('PUT not supported on /dishes');
 })
-.delete(cors.corsWithOptions, authenticate.verifyUser ,(req,res,next) =>{
-    if(!req.user.admin) {
-        var err = new Error('You are not authorized for this operation');
-        err.status = 403;
-        throw err;
-    }
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin ,(req,res,next) =>{
     Dishes.deleteMany()
     .then((response) => {
         res.statusCode = 200;
@@ -58,7 +48,7 @@ dishRouter.route('/')
 
 dishRouter.route('/:dishId')
 .options(cors.corsWithOptions, (req,res) => {res.sendStatus(200);})
-.get(cors.cors, (req,res,next) => {
+.get(cors.corsWithOptions, (req,res,next) => {
     Dishes.findById(req.params.dishId)
     .populate('comments.author')
     .then((dishes) =>{
@@ -69,16 +59,12 @@ dishRouter.route('/:dishId')
     .catch((err) => next(err));
 })
 
-.post(cors.corsWithOptions, authenticate.verifyUser ,(req,res,next) =>{
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin ,(req,res,next) =>{
     res.statusCode = 403;
     res.end('POST not supported for /dishes/'+ req.params.dishId);    
 })
 
-.put(cors.corsWithOptions, authenticate.verifyUser ,(req,res,next) =>{
-    if(!req.user.admin) {
-        var err = new Error('You are not authorized for this operation'); err.status = 403;
-        throw err;
-    }
+.put(cors.corsWithOptions, authenticate.verifyUser ,authenticate.verifyAdmin ,(req,res,next) =>{
     Dishes.findByIdAndUpdate(req.params.dishId, {
         $set: req.body
     }, {new:true})
@@ -90,11 +76,7 @@ dishRouter.route('/:dishId')
     .catch((err) => next(err));
 })
 
-.delete(cors.corsWithOptions, authenticate.verifyUser ,(req,res,next) =>{
-    if(!req.user.admin) {
-        var err = new Error('You are not authorized for this operation'); err.status = 403;
-        throw err;
-    }
+.delete(cors.corsWithOptions, authenticate.verifyUser ,authenticate.verifyAdmin,(req,res,next) =>{
     Dishes.findByIdAndDelete(req.params.dishId)
     .then((dishes) =>{
         res.statusCode = 200;
@@ -107,7 +89,7 @@ dishRouter.route('/:dishId')
 
 dishRouter.route('/:dishId/comments')
 .options(cors.corsWithOptions, (req,res) => {res.sendStatus(200);})
-.get(cors.cors, (req,res,next) => {
+.get(cors.corsWithOptions, (req,res,next) => {
     Dishes.findById(req.params.dishId)
     .populate('comments.author')
     .then((dish) =>{
@@ -125,7 +107,7 @@ dishRouter.route('/:dishId/comments')
     .catch((err) => next(err));
 })
 
-.post(cors.corsWithOptions, authenticate.verifyUser ,(req,res,next) =>{
+.post(cors.corsWithOptions, authenticate.verifyUser, (req,res,next) =>{
     Dishes.findById(req.params.dishId)
     .then((dish) => {
         if(dish != null) {
@@ -157,12 +139,7 @@ dishRouter.route('/:dishId/comments')
     res.end('PUT not supported on /dishes'+req.params.dishId+'/comments');
 })
 
-.delete(cors.corsWithOptions, authenticate.verifyUser ,(req,res,next) => {
-    // var admin = authenticate.verifyAdmin({_id: req.user._id}); 
-    if(!req.user.admin) {
-        var err = new Error('You are not authorized for this operation'); err.status = 403;
-        throw err;
-    }
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin ,(req,res,next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
         if(dish != null) {
@@ -190,7 +167,7 @@ dishRouter.route('/:dishId/comments')
 
 dishRouter.route('/:dishId/comments/:commentId')
 .options(cors.corsWithOptions, (req,res) => {res.sendStatus(200);})
-.get(cors.cors, (req,res,next) => {
+.get(cors.corsWithOptions, (req,res,next) => {
     Dishes.findById(req.params.dishId)
     .populate('comments.author')
     .then((dish) =>{

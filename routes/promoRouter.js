@@ -10,7 +10,7 @@ promoRouter.use(express.json());
 
 promoRouter.route('/')
 .options(cors.corsWithOptions, (req,res) => {res.sendStatus(200);})
-.get(cors.cors, (req,res,next) => {
+.get(cors.corsWithOptions, (req,res,next) => {
     Promotions.find({})
     .then((promos)=> {
         res.statusCode = 200;
@@ -21,11 +21,7 @@ promoRouter.route('/')
     )
     .catch((err) => next(err));
 })
-.post(cors.corsWithOptions, authenticate.verifyUser ,(req,res,next) =>{
-    if(!req.user.admin) {
-        var err = new Error('You are not authorized for this operation');
-        throw err;
-    }
+.post(cors.corsWithOptions, authenticate.verifyUser,authenticate.verifyAdmin ,(req,res,next) =>{
     Promotions.create(req.body)
     .then((promo)=> {
         res.statusCode = 200;
@@ -36,15 +32,11 @@ promoRouter.route('/')
     )
     .catch((err) => next(err));
 })
-.put(cors.corsWithOptions, authenticate.verifyUser ,(req,res,next) =>{
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin ,(req,res,next) =>{
     res.statusCode = 403;
     res.end('PUT not supported on /promotions');
 })
-.delete(cors.corsWithOptions, authenticate.verifyUser ,(req,res,next) =>{
-    if(!req.user.admin) {
-        var err = new Error('You are not authorized for this operation');
-        throw err;
-    }
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin ,(req,res,next) =>{
     Promotions.deleteMany()
     .then((response) => {
         res.statusCode= 200;
@@ -59,7 +51,7 @@ promoRouter.route('/')
 
 promoRouter.route('/:promoId')
 .options(cors.corsWithOptions, (req,res) => {res.sendStatus(200);})
-.get(cors.cors, (req,res,next) => {
+.get(cors.corsWithOptions, (req,res,next) => {
     Promotions.findById(req.params.promoId)
     .then((promo) => {
         res.statusCode = 200;
@@ -71,20 +63,12 @@ promoRouter.route('/:promoId')
     .catch((err) => next(err));
 })
 
-.post(cors.corsWithOptions, authenticate.verifyUser ,(req,res,next) =>{
-    if(!req.user.admin) {
-        var err = new Error('You are not authorized for this operation');
-        throw err;
-    }
+.post(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin ,(req,res,next) =>{
     res.statusCode = 403;
     res.end('POST not supported for /promos/'+ req.params.promoId);    
 })
 
-.put(cors.corsWithOptions, authenticate.verifyUser ,(req,res,next) =>{
-    if(!req.user.admin) {
-        var err = new Error('You are not authorized for this operation');
-        throw err;
-    }
+.put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin ,(req,res,next) =>{
     Promotions.findByIdAndUpdate(req.params.promoId,{
         $set: req.body
     },{new: true})
@@ -98,11 +82,7 @@ promoRouter.route('/:promoId')
     .catch((err) =>next(err));
 })
 
-.delete(cors.corsWithOptions, authenticate.verifyUser ,(req,res,next) =>{
-    if(!req.user.admin) {
-        var err = new Error('You are not authorized for this operation');
-        throw err;
-    }
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin ,(req,res,next) =>{
     Promotions.findByIdAndRemove(req.params.promoId)
     .then((promos) => {
         res.statusCode = 200;

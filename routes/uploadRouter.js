@@ -35,45 +35,26 @@ uploadRouter
   .options(cors.corsWithOptions, (req, res) => {
     res.sendStatus(200);
   })
-  .get(cors.cors, authenticate.verifyUser, (req, res, next) => {
-    if (!req.user.admin) {
-      var err = new Error("You are not authorized for this operation");
-      err.status = 403;
-      throw err;
-    }
+  .get(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     res.statusCode = 403;
     res.end("GET is not allowed images/upload");
   })
   .post(
     cors.corsWithOptions,
     authenticate.verifyUser,
+    authenticate.verifyAdmin,
     upload.single("imageFile"),
     (req, res) => {
-      if (!req.user.admin) {
-        var err = new Error("You are not authorized for this operation");
-        err.status = 403;
-        throw err;
-      }
       res.statusCode = 200;
       res.setHeader("Content-Type", "application/json");
       res.json(req.file);
     }
   )
-  .put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
-    if (!req.user.admin) {
-      var err = new Error("You are not authorized for this operation");
-      err.status = 403;
-      throw err;
-    }
+  .put(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     res.statusCode = 403;
     res.end("Put is not allowed images/upload");
   })
-  .delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
-    if (!req.user.admin) {
-      var err = new Error("You are not authorized for this operation");
-      err.status = 403;
-      throw err;
-    }
+  .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     res.statusCode = 403;
     res.end("Delete is not allowed images/upload");
   });
