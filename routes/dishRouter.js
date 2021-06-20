@@ -136,7 +136,7 @@ dishRouter.route('/:dishId/comments')
 
 .put(cors.corsWithOptions, authenticate.verifyUser ,(req,res,next) =>{
     res.statusCode = 403;
-    res.end('PUT not supported on /dishes'+req.params.dishId+'/comments');
+    res.end('PUT not supported on /'+req.params.dishId+'/comments');
 })
 
 .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin ,(req,res,next) => {
@@ -167,7 +167,7 @@ dishRouter.route('/:dishId/comments')
 
 dishRouter.route('/:dishId/comments/:commentId')
 .options(cors.corsWithOptions, (req,res) => {res.sendStatus(200);})
-.get(cors.corsWithOptions, (req,res,next) => {
+.get(cors.cors, (req,res,next) => {
     Dishes.findById(req.params.dishId)
     .populate('comments.author')
     .then((dish) =>{
